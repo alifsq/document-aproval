@@ -1,0 +1,78 @@
+============================================================
+PROJECT SPECIFICATION: SECURE MULTI-TENANT DOCUMENT APPROVAL
+============================================================
+Focus: Laravel Security (Custom Guard, RBAC, Multi-tenancy)
+Deadline: Today, < 24:00
+------------------------------------------------------------
+
+1. AUTHENTICATION & TOKEN MANAGEMENT
+------------------------------------
+1.1 Successful Login:
+    - Input: email & password (valid), user (active), tenant (active).
+    - Action: Generate random plaintext token, store hash(token) in DB,
+      set expires_at, revoke old tokens.
+    - Output: Return plaintext token (one-time only).
+1.2 Failed Login:
+    - Non-existent email / Wrong password: 401 Unauthorized.
+    - Inactive User/Tenant: 403 Forbidden.
+1.3 Token Expired:
+    - Reject request if expires_at < now(). Response: 401.
+1.4 Token Revoked:
+    - Reject if revoked_at != null. Response: 401.
+
+2. TENANT ISOLATION (CRITICAL)
+------------------------------
+2.1 Tenant Mismatch: If token tenant_id != resource tenant_id.
+    - Action: 403 Forbidden (Do not leak info about data existence).
+2.2 Inactive Tenant: If tenant is_active = false, all APIs reject (403).
+
+3. DOCUMENT CREATION & EDITING
+------------------------------
+3.1 Create Document:
+    - Role: Staff, Manager.
+    - Rule: Initial status 'draft', only owner allowed to edit.
+    - Validation: Title required (422), Auditor forbidden from creating (403).
+3.2 Edit Document:
+    - Allow: Only if status is 'draft' and user is the creator.
+    - Deny: Status != draft or not the owner.
+
+4. SUBMIT DOCUMENT
+------------------
+4.1 Success: Status 'draft' -> 'submitted', set submitted_at (owner only).
+4.2 Failure: Status != draft (422), Not the owner (403).
+
+5. APPROVAL PROCESS (STATE MACHINE)
+-----------------------------------
+5.1 Approve:
+    - Role: Manager.
+    - Rule: Status must be 'submitted', creator forbidden from approving own document.
+    - Action: Status -> 'approved', set approved_at, log to document_approvals.
+5.2 Reject:
+    - Role: Manager. Rule: Comment is mandatory.
+    - Action: Status -> 'rejected', set rejected_at.
+5.3 Idempotency: If already approved/rejected, repeat action -> 409 Conflict.
+
+6. VISIBILITY RULES
+-------------------
+- Admin/Manager: View all documents within the tenant.
+- Staff: View only their own documents.
+- Auditor: View only documents with 'approved' status.
+
+7. AUDIT LOGGING (IMMUTABLE)
+----------------------------
+- Record: Login, Logout, Create, Submit, Approve, Reject.
+- Data: tenant_id, user_id, action, subject, old_data -> new_data, IP, User Agent.
+
+8. SECURITY HARDENING
+---------------------
+- Error Strategy: Use generic messages (Forbidden) to prevent enumeration.
+- Rate Limit: Login (5x/min), Approval (10x/min).
+- Replay Attack Protection: Check hash_token + User Agent mismatch.
+
+9. BUSINESS INVARIANTS
+----------------------
+- Status cannot skip stages (e.g., Draft directly to Approved).
+- No cross-tenant access.
+- Approval cannot be undone.
+- Business logic must be in Service/Action classes, Controllers stay lean.
+============================================================

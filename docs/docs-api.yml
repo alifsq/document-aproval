@@ -1,0 +1,285 @@
+openapi: 3.0.3
+
+info:
+  title: Secure Multi-Tenant Document Approval API
+  version: 1.0.0
+  description: |
+    Production-grade RESTful API for internal document approval system.
+    - Custom stateless authentication (no Sanctum)
+    - Strict tenant isolation
+    - Role & policy-based authorization
+    - Audit logged
+
+servers:
+  - url: https://api.example.com
+
+security:
+  - BearerAuth: []
+
+# ======================================================
+# COMPONENTS
+# ======================================================
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_TOKEN
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          nullable: true
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, staff, auditor]
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [draft, submitted, approved, rejected]
+        created_at:
+          type: string
+          format: date-time
+
+# ======================================================
+# PATHS
+# ======================================================
+
+paths:
+  # --------------------------------------------------
+  # AUTHENTICATION
+  # --------------------------------------------------
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and generate API token
+      description: |
+        Generate stateless API token.
+        Token is returned once and stored hashed in database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: Login success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+        401:
+          description: Invalid credentials
+        403:
+          description: User or tenant inactive
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke current token
+      responses:
+        204:
+          description: Token revoked
+        401:
+          description: Unauthorized
+
+  # --------------------------------------------------
+  # DOCUMENTS
+  # --------------------------------------------------
+
+  /api/documents:
+    get:
+      tags: [Documents]
+      summary: List documents (tenant scoped)
+      description: |
+        Visibility rules:
+        - admin, manager: all tenant documents
+        - staff: own documents
+        - auditor: approved documents only
+      responses:
+        200:
+          description: Document list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document"
+        401:
+          description: Unauthorized
+
+    post:
+      tags: [Documents]
+      summary: Create document
+      description: |
+        Allowed roles: staff, manager
+        Initial status: draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, content]
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        201:
+          description: Document created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        403:
+          description: Forbidden
+        422:
+          description: Validation error
+
+  /api/documents/{id}:
+    get:
+      tags: [Documents]
+      summary: Get document detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Document detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+
+  /api/documents/{id}/submit:
+    post:
+      tags: [Documents]
+      summary: Submit document for approval
+      description: |
+        Rules:
+        - Only creator
+        - Status must be draft
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Document submitted
+        403:
+          description: Forbidden
+        422:
+          description: Invalid state
+
+  /api/documents/{id}/approve:
+    post:
+      tags: [Documents]
+      summary: Approve document
+      description: |
+        Rules:
+        - Role: manager
+        - Status must be submitted
+        - Cannot approve own document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Document approved
+        403:
+          description: Forbidden
+        409:
+          description: Already approved/rejected
+        422:
+          description: Invalid state
+
+  /api/documents/{id}/reject:
+    post:
+      tags: [Documents]
+      summary: Reject document
+      description: |
+        Rules:
+        - Role: manager
+        - Status must be submitted
+        - Comment required
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [comment]
+              properties:
+                comment:
+                  type: string
+      responses:
+        200:
+          description: Document rejected
+        403:
+          description: Forbidden
+        409:
+          description: Already approved/rejected
+        422:
+          description: Invalid state

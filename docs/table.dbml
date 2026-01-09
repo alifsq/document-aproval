@@ -1,0 +1,136 @@
+// ======================================================
+// Secure Multi-Tenant Document Approval System
+// Laravel 12 – Production Grade Database Design
+// ======================================================
+
+Table tenants {
+    id bigint [pk, increment]
+    name varchar
+    code varchar [unique, note: "Public tenant identifier"]
+    is_active boolean [default: true]
+
+    created_at timestamp
+    updated_at timestamp
+}
+
+// ------------------------------------------------------
+
+Table users {
+    id bigint [pk, increment]
+    tenant_id bigint [not null, ref: > tenants.id]
+
+    name varchar
+    email varchar [unique]
+    password varchar
+
+    role varchar [note: "admin | manager | staff | auditor"]
+    is_active boolean [default: true]
+
+    created_at timestamp
+    updated_at timestamp
+
+    Indexes {
+        (tenant_id)
+        (email)
+    }
+
+}
+
+// ------------------------------------------------------
+
+Table api_tokens {
+    id bigint [pk, increment]
+    user_id bigint [not null, ref: > users.id]
+    tenant_id bigint [not null, ref: > tenants.id]
+
+    token_hash varchar [note: "sha256 hash of token"]
+    name varchar [note: "Device or purpose name"]
+
+    last_used_at timestamp
+    expires_at timestamp
+    revoked_at timestamp
+
+    created_at timestamp
+
+    Indexes {
+        (token_hash) [unique]
+        (user_id)
+        (tenant_id)
+        (expires_at)
+    }
+
+}
+
+// ------------------------------------------------------
+
+Table documents {
+    id bigint [pk, increment]
+    tenant_id bigint [not null, ref: > tenants.id]
+    created_by bigint [not null, ref: > users.id]
+
+    title varchar
+    content text
+
+    status varchar [note: "draft | submitted | approved | rejected"]
+
+    submitted_at timestamp
+    approved_at timestamp
+    rejected_at timestamp
+
+    created_at timestamp
+    updated_at timestamp
+
+    Indexes {
+        (tenant_id)
+        (status)
+        (created_by)
+    }
+
+}
+
+// ------------------------------------------------------
+
+Table document_approvals {
+    id bigint [pk, increment]
+    document_id bigint [not null, ref: > documents.id]
+    approved_by bigint [not null, ref: > users.id]
+
+    decision varchar [note: "approved | rejected"]
+    comment text
+
+    created_at timestamp
+
+    Indexes {
+        (document_id)
+        (approved_by)
+    }
+
+}
+
+// ------------------------------------------------------
+
+Table audit_logs {
+    id bigint [pk, increment]
+    tenant_id bigint [not null, ref: > tenants.id]
+    user_id bigint [ref: > users.id]
+
+    action varchar
+    subject_type varchar
+    subject_id bigint
+
+    old_values json
+    new_values json
+
+    ip_address varchar
+    user_agent text
+
+    created_at timestamp
+
+    Indexes {
+        (tenant_id)
+        (user_id)
+        (action)
+        (subject_type, subject_id)
+    }
+
+}
