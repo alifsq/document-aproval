@@ -12,10 +12,11 @@ return new class extends Migration {
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->string('title', 100);
+            $table->string('title',100);
             $table->text('content')->nullable();
-            $table->string('status', 50);
-            $table->timestamp('submited_at');
+            $table->string('file_path')->nullable();
+            $table->enum('status', ['draft', 'submitted', 'approved', 'rejected'])->default('draft');
+            $table->timestamp('submitted_at');
             $table->timestamp('approved_at');
             $table->timestamp('rejected_at');
             $table->timestamps();

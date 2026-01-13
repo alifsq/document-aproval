@@ -18,7 +18,7 @@ class AuthService
         }
 
         // if user not active or tenan not active => abort
-        if (!$user->is_active || !$user->tenant->is_Active) {
+        if (!$user->is_active || !$user->tenant->is_active) {
             abort(403, 'account dissabled');
         }
 
@@ -27,10 +27,14 @@ class AuthService
         ApiToken::create([
             'user_id' => $user->id,
             'tenant_id' => $user->tenant_id,
+            'name' => 'API Token',
             'token_hash' => hash('sha256', $plainToken),
             'expires_at' => now()->addHours(8),
         ]);
 
-        return $plainToken;
+        return [
+            'token' => $plainToken,
+            'expires_at' => now()->addHours(8),
+        ];
     }
 }

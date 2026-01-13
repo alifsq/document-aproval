@@ -28,4 +28,8 @@ class AppServiceProvider extends ServiceProvider
             return (new TokenHandler())->authenticate($request);
         });
     }
+
+    protected $policies = [
+        Document::class => DocumentPolicy::class,
+    ];
 }

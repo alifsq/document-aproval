@@ -1,26 +1,51 @@
 <?php
 
-// Token Handler
 namespace App\Providers\Auth;
 
 use App\Models\ApiToken;
+use App\Models\User;
 use Illuminate\Http\Request;
 
-class TokenHandler {
-    public function authenticate(Request $request){
-        $header = $request->header('Athorization');
+class TokenHandler
+{
+    public function authenticate(Request $request): ?User
+    {
+        $header = $request->header('Authorization');
 
-        if(!$header ||str_starts_with($header,'Bearer')){
+        logger()->info('TOKEN HANDLER HIT', [
+            'authorization' => $header,
+        ]);
+
+        if (! $header || ! str_starts_with($header, 'Bearer ')) {
             return null;
         }
-        $token = substr($header,7);
-        $tokenHash = hash('256',$token);
 
-        $apitoken = ApiToken::query()
-            ->where('token_hash',$tokenHash)
+        $plainToken = substr($header, 7);
+        $tokenHash  = hash('sha256', $plainToken);
+
+        $apiToken = ApiToken::query()
+            ->where('token_hash', $tokenHash)
             ->whereNull('revoked_at')
-            ->where('expires_at','>',now());
+            ->where('expires_at', '>', now())
+            ->first();
 
-        return $apitoken->user();
+        logger()->info('TOKEN DEBUG', [
+            'plain' => $plainToken,
+            'hash' => $tokenHash,
+            'found' => (bool) $apiToken,
+            'expires_at' => optional($apiToken)->expires_at,
+            'revoked_at' => optional($apiToken)->revoked_at,
+        ]);
+
+        if (! $apiToken) {
+            return null;
+        }
+
+        $user = $apiToken->user;
+
+        // 🔑 WAJIB agar logout bisa revoke token
+        $user->setRelation('currentAccessToken', $apiToken);
+
+        return $user;
     }
 }
