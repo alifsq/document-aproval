@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('role',20);
             $table->boolean('is_active')->default(false);
             $table->timestamps();
-            $table->foreignId('tenant_id')->constrained();
+            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
         });
 
 
