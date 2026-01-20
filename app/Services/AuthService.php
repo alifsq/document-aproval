@@ -9,16 +9,16 @@ use Illuminate\Support\Str;
 
 class AuthService
 {
-    public function authenticate(Request $request){
-        $user = User::where('email', $request->email)->first();
+    public function authenticate(array $credentials){
+        $user = User::query()->where('email', $credentials['email'])->first();
 
         // if not user and not checked hash in password => abort
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
             abort(401, 'invalid credential');
         }
 
         // if user not active or tenan not active => abort
-        if (!$user->is_active || !$user->tenant->is_active) {
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
             abort(403, 'account dissabled');
         }
 

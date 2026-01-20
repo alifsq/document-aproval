@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +30,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
-            'role' => 'user',
+            'role' => UserRole::STAFF,
             'is_active' => true,
         ];
     }
@@ -40,7 +41,20 @@ class UserFactory extends Factory
     public function admin()
     {
         return $this->state(fn() => [
-            'role' => 'admin',
+            'role' => UserRole::ADMIN,
+        ]);
+    }
+
+    public function manager()
+    {
+        return $this->state(fn() => [
+            'role' => UserRole::MANAGER,
+        ]);
+    }
+    public function auditor()
+    {
+        return $this->state(fn() => [
+            'role' => UserRole::AUDITOR,
         ]);
     }
 

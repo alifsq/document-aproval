@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,6 +51,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
     }
 
@@ -63,11 +65,13 @@ class User extends Authenticatable
         return $this->hasMany(ApiToken::class, 'user_id', 'id');
     }
 
-    public function document(){
-        return $this->hasMany(Document::class,'created_by','id');
+    public function document()
+    {
+        return $this->hasMany(Document::class, 'created_by', 'id');
     }
 
-    public function document_approval(){
-        return $this->hasMany(DocumentAproval::class,'approved_by','id');
+    public function document_approval()
+    {
+        return $this->hasMany(DocumentAproval::class, 'approved_by', 'id');
     }
 }

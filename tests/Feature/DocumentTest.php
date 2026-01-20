@@ -12,6 +12,7 @@ use Tests\TestCase;
 
 class DocumentTest extends TestCase
 {
+    use RefreshDatabase;
     public function testTenantActive()
     {
         $tenant = Tenant::factory()->create([
@@ -26,7 +27,10 @@ class DocumentTest extends TestCase
         $this->actingAs($user, 'api-token');
 
         $response = $this->getJson('/api/documents');
-
+        
         $response->assertStatus(200);
+    }
+    public function testTenantNonActive(){
+
     }
 }

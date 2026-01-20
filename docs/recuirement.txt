@@ -76,3 +76,10 @@ Deadline: Today, < 24:00
 - Approval tidak bisa di-undo.
 - Logic bisnis harus di Service/Action classes, Controller tetap ramping.
 ============================================================
+
+| Role    | Create | Edit           | Submit | Approve/Reject | View           |
+| ------- | ------ | -------------- | ------ | -------------- | -------------- |
+| Admin   | ❌      | ❌              | ❌      | ❌              | Semua (tenant) |
+| Manager | ❌      | ❌              | ❌      | ✅              | Semua (tenant) |
+| Staff   | ✅      | ✅ (draft only) | ✅      | ❌              | Milik sendiri  |
+| Auditor | ❌      | ❌              | ❌      | ❌              | Approved only  |
