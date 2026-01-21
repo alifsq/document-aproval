@@ -1,26 +1,43 @@
 <?php
 namespace App\Services;
 
+use App\Exceptions\InactiveTenantException;
+use App\Exceptions\InActiveUserException;
+use App\Exceptions\InvalidCredentialException;
 use App\Models\ApiToken;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+
 class AuthService
 {
-    public function authenticate(array $credentials){
-        $user = User::query()->where('email', $credentials['email'])->first();
+    public function authenticate(string $email, string $password)
+    {
 
-        // if not user and not checked hash in password => abort
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            abort(401, 'invalid credential');
+        $user = User::with('tenant')->where('email', $email)->first();
+
+
+        if (!$user || !Hash::check($password, $user->password)) {
+            throw new InvalidCredentialException();
         }
 
-        // if user not active or tenan not active => abort
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            abort(403, 'account dissabled');
+        if (!$user->is_active) {
+            throw new InActiveUserException();
         }
+
+        $tenant = $user->tenant;
+        if (!$tenant->is_active) {
+            throw new InactiveTenantException();
+        }
+
+        // Revoke the old token
+        ApiToken::query()->where('user_id', '=', $user->id)
+            ->whereNull('revoked_at')
+            ->update([
+                'revoked_at' => now()
+            ]);
+
 
         $plainToken = Str::random(64);
 

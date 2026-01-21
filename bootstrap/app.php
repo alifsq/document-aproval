@@ -1,9 +1,13 @@
 <?php
 
+use App\Exceptions\InactiveTenantException;
 use App\Http\Middleware\EnsureTenantMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Exceptions\InvalidCredentialException;
+use App\Exceptions\InactiveUserException;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,5 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(fn (InvalidCredentialException $e, Request $request) => $e->render($request));
+        $exceptions->render(fn (InActiveUserException $e, Request $request) => $e->render($request));
+        $exceptions->render(fn (InactiveTenantException $e, Request $request) => $e->render($request));
+
+
+
     })->create();

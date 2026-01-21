@@ -34,7 +34,6 @@ class UserFactory extends Factory
             'is_active' => true,
         ];
     }
-
     /**
      * Indicate that the model's email address should be unverified.
      */

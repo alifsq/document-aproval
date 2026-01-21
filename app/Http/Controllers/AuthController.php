@@ -17,9 +17,12 @@ class AuthController extends Controller
     }
     public function login(LoginRequest $request)
     {
-        $token = $this->authService->authenticate($request->validated());
+        $result = $this->authService->authenticate(
+            $request->email,
+            $request->password,
+        );
 
-        return response()->json($token);
+        return response()->json($result, 200);
     }
 
     public function logout(Request $request)
