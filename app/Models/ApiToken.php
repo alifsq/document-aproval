@@ -40,4 +40,14 @@ class ApiToken extends Model
     {
         return $this->belongsTo(Tenant::class, 'tenant_id', 'id', 'tenants');
     }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at && $this->expires_at->lt(now());
+    }
+
+    public function isRevoked()
+    {
+        return $this->revoked_at != null;
+    }
 }

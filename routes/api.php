@@ -6,8 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('auth/login', [AuthController::class, 'login']);
 
-
-Route::middleware(['auth:api-token', 'tenant.isactive'])->group(function () {
+Route::middleware(['auth:api', 'tenant.isactive'])->group(function () {
     Route::get('/documents',[DocumentController::class, 'index']);
 
 });

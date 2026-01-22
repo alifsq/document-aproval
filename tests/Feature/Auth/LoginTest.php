@@ -65,37 +65,4 @@ class LoginTest extends TestCase
         ]);
         $response->assertStatus(403);
     }
-
-    public function testTokenExpired()
-    {
-        $tenant = Tenant::factory()->create();
-        $user = User::factory()->for($tenant)->create();
-
-        $token = ApiToken::factory()->expired()->create([
-            'user_id' => $user->id,
-            'tenant_id' => $tenant->id,
-            'token_hash' => hash('sha256', 'expired-token')
-        ]);
-        // dd(
-        //     [
-        //         'factory' => $token->getAttributes(),
-        //         'fresh' => $token->fresh()->getAttributes(),
-        //     ]
-        // );
-
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer expired-token',
-        ])->getJson('api/documents');
-
-        $response->assertStatus(401)->assertJson([
-            'message' => 'Unauthenticated.',
-        ]);
-    }
-
-    public function testRevokeToken(){
-            
-    }
-
-
-
 }

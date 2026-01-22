@@ -83,3 +83,14 @@ Deadline: Today, < 24:00
 | Manager | ❌      | ❌              | ❌      | ✅              | Semua (tenant) |
 | Staff   | ✅      | ✅ (draft only) | ✅      | ❌              | Milik sendiri  |
 | Auditor | ❌      | ❌              | ❌      | ❌              | Approved only  |
+
++---------------------------+------+----------------------+
+| Konstanta                 | Kode | Kegunaan Utama       |
++---------------------------+------+----------------------+
+| HTTP_OK                   | 200  | Berhasil (General)   |
+| HTTP_CREATED              | 201  | Berhasil simpan data |
+| HTTP_UNAUTHORIZED         | 401  | Belum login          |
+| HTTP_FORBIDDEN            | 403  | Tidak punya akses    |
+| HTTP_NOT_FOUND            | 404  | Halaman/Data hilang  |
+| HTTP_UNPROCESSABLE_ENTITY | 422  | Error validasi form  |
++---------------------------+------+----------------------+

@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\InactiveTenantException;
+use App\Http\Middleware\CheckApiToken;
 use App\Http\Middleware\EnsureTenantMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,10 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(fn (InvalidCredentialException $e, Request $request) => $e->render($request));
-        $exceptions->render(fn (InActiveUserException $e, Request $request) => $e->render($request));
-        $exceptions->render(fn (InactiveTenantException $e, Request $request) => $e->render($request));
-
-
-
+        $exceptions->render(fn(InvalidCredentialException $e, Request $request) => $e->render($request));
+        $exceptions->render(fn(InActiveUserException $e, Request $request) => $e->render($request));
+        $exceptions->render(fn(InactiveTenantException $e, Request $request) => $e->render($request));
     })->create();

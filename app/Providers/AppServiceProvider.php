@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ApiToken;
 use App\Providers\Auth\TokenHandler;
+use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -24,12 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Auth::viaRequest('api-token', function (Request $request) {
-            return (new TokenHandler())->authenticate($request);
+        Auth::extend('api_token', function ($app, $name, array $config) {
+            // Make sure to use the correct namespace for ApiTokenGuard
+            return new \App\Guards\ApiTokenGuard(
+                Auth::createUserProvider($config['provider']),
+                $app->make('request')
+            );
         });
     }
-
-    protected $policies = [
-        Document::class => DocumentPolicy::class,
-    ];
 }

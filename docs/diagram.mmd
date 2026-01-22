@@ -1,0 +1,59 @@
+sequenceDiagram
+    autonumber
+    actor U as User (Staff/Manager/Admin/Auditor)
+    participant G as Custom Guard (Security)
+    participant M as Tenant Middleware
+    participant P as Document Policy
+    participant DB as Database
+
+    Note over U, DB: PHASE 1: AUTHENTICATION (Login)
+    U->>G: Post Login (Email, Password)
+    G->>DB: Check User (active) & Tenant (active)
+
+    alt User/Tenant Inactive or Wrong Credentials
+        DB-->>U: 401/403 Error
+    else Success
+        G->>DB: Hash & Store Token (expires_at)
+        G-->>U: Return Plaintext Token
+    end
+
+    Note over U, DB: PHASE 2: AUTHORIZATION (Action)
+    U->>G: API Request + Bearer Token
+    G->>DB: Check hash(token) & User Agent Match
+
+    alt Token Valid
+        G->>M: Check Tenant Isolation
+        alt Tenant OK
+            M->>P: Check Policy Rules
+
+            alt Role: Admin
+                P->>DB: Full Access (All documents in tenant)
+                DB-->>U: 200 OK
+
+            else Role: Manager
+                Note right of P: Manager can view all & Approve others' docs
+                alt Action: View
+                    P->>DB: Show All Documents in Tenant
+                else Action: Approve/Reject
+                    alt Is Owner of Document?
+                        P-->>U: 403 Forbidden (Self-approval prohibited)
+                    else Status == 'submitted'
+                        P->>DB: Update Status & Log Audit
+                        DB-->>U: 200 OK
+                    end
+                end
+
+            else Role: Staff
+                alt Action: Create/Submit/Edit
+                    P->>DB: Allow if Owner & Status == 'draft'
+                else Action: View
+                    P->>DB: Show Only Own Documents
+                end
+                DB-->>U: Result
+
+            else Role: Auditor
+                P->>DB: Filter (status == 'approved' ONLY)
+                DB-->>U: Read-only access
+            end
+        end
+    end
