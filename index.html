@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Documentation - Document Approval System</title>
+
+    <!-- SEO -->
+    <meta name="description"
+        content="Dokumentasi REST API Document Approval System berbasis Laravel 12 dengan JWT, RBAC, dan Rate Limiting">
+    <meta name="author" content="Your Name">
+
+    <!-- CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        section[id],
+        header[id] {
+            scroll-margin-top: 5rem;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            border: 1px solid #1e293b;
+            line-height: 1.6;
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Sidebar transitions */
+        #sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Desktop Sidebar Hidden State */
+        .sidebar-closed #sidebar {
+            transform: translateX(-100%);
+        }
+
+        /* Main Content Shift */
+        #mainContent {
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-closed #mainContent {
+            margin-left: 0 !important;
+        }
+
+        .sidebar-closed #topNav {
+            left: 0 !important;
+        }
+
+        .sidebar-link.active {
+            background: #1e293b;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .sidebar-link.active i {
+            color: #60a5fa;
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #3b82f6;
+        }
+
+        /* QR Scanner Animation */
+        .qr-scanner-line {
+            height: 2px;
+            background: #3b82f6;
+            box-shadow: 0 0 15px #3b82f6;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            animation: scan-qr 2.5s ease-in-out infinite;
+        }
+
+        @keyframes scan-qr {
+
+            0%,
+            100% {
+                top: 0%;
+                opacity: 0;
+            }
+
+            10%,
+            90% {
+                opacity: 1;
+            }
+
+            50% {
+                top: 100%;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 overflow-x-hidden">
+
+    <!-- Overlay (Hanya untuk mobile) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-40 transition-opacity">
+    </div>
+
+    <!-- NAVBAR -->
+    <nav id="topNav"
+        class="fixed top-0 left-0 right-0 md:left-64 h-16 glass-nav z-40 px-4 md:px-8 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <!-- Burger Button (Desktop & Mobile) -->
+            <button id="menuBtn" class="text-slate-600 p-2 hover:bg-slate-100 rounded-lg transition">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+
+            <!-- Logo Samping Burger (Muncul jika sidebar tertutup) -->
+            <div id="navLogo" class="flex items-center gap-2 transition-opacity duration-300">
+                <i class="fas fa-file-contract text-blue-600 text-xl"></i>
+                <span class="font-bold tracking-tighter text-slate-900 text-lg">DocFlow</span>
+            </div>
+        </div>
+
+        <div class="hidden lg:block text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
+            System Documentation — Laravel 12
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Version Label: Muncul di Desktop & Mobile -->
+            <div
+                class="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[10px] font-bold uppercase">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                v12.0
+            </div>
+            <a href="#" class="text-slate-400 hover:text-slate-900 transition">
+                <i class="fab fa-github text-xl"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR -->
+    <!-- Di mobile menggunakan -translate-x-full secara default agar tersembunyi -->
+    <aside id="sidebar" class="fixed left-0 top-0 w-64 h-full bg-slate-900 text-white
+         z-50 shadow-2xl overflow-y-auto transform -translate-x-full md:translate-x-0">
+
+        <div class="p-8 border-b border-slate-800 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-black flex items-center gap-3 tracking-tighter text-white">
+                    <i class="fas fa-file-contract text-blue-400 text-xl"></i> DocFlow
+                </h1>
+                <p class="text-[10px] text-slate-500 mt-2 tracking-[0.3em] uppercase font-bold">Architecture Engine</p>
+            </div>
+            <!-- Tombol Tutup Khusus Mobile -->
+            <button id="closeSidebarMobile" class="md:hidden text-slate-500 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <nav class="p-4 mt-4 space-y-1">
+            <p class="px-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-4">Core Reference</p>
+            <a href="#hero"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition group">
+                <i class="fas fa-home w-5 group-hover:scale-110 transition"></i>
+                <span class="font-medium text-sm">Dashboard</span>
+            </a>
+            <a href="#features"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition group">
+                <i class="fas fa-layer-group w-5 group-hover:scale-110 transition"></i>
+                <span class="font-medium text-sm">Tech Stack</span>
+            </a>
+            <a href="#security"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition group">
+                <i class="fas fa-shield-halved w-5 group-hover:scale-110 transition"></i>
+                <span class="font-medium text-sm">Security Logic</span>
+            </a>
+            <a href="#endpoint"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition group">
+                <i class="fas fa-code w-5 group-hover:scale-110 transition"></i>
+                <span class="font-medium text-sm">API Endpoint</span>
+            </a>
+            <a href="#adv-features"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition group">
+                <i class="fas fa-star w-5 group-hover:scale-110 transition text-amber-400"></i>
+                <span class="font-medium text-sm">Advanced Features</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-8 left-0 right-0 px-8">
+            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+                <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Developer</p>
+                <p class="text-xs font-bold text-blue-400 italic text-nowrap truncate">Web Developer Journey</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="mainContent" class="md:ml-64 min-h-screen pt-16 transition-all duration-300">
+
+        <!-- HERO -->
+        <header id="hero" class="relative bg-slate-900 text-white px-6 md:px-16 py-20 md:py-32 overflow-hidden">
+            <!-- Glow background -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] -ml-32 -mb-32">
+            </div>
+
+            <div
+                class="relative z-10 max-w-7xl mx-auto grid grid-cols-[1fr_auto] md:grid-cols-2 gap-6 md:gap-12 items-center">
+                <!-- LEFT CONTENT -->
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-6">
+                        Laravel 12 Engine
+                    </div>
+
+                    <h1 class="text-3xl sm:text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-tight">
+                        Secure Document
+                        <span class="block text-transparent bg-clip-text
+               bg-gradient-to-r from-blue-400 via-blue-200 to-indigo-300
+               skew-x-0 md:skew-x-[-6deg] mt-1 md:mt-2">
+                            Approval Systems
+                        </span>
+                    </h1>
+
+
+                    <p class="text-slate-400 text-sm sm:text-base md:text-xl max-w-xl italic mb-8 leading-relaxed">
+
+                        Implementasi REST API tingkat lanjut dengan fokus pada
+                        <span class="text-white font-bold">Clean Architecture</span>,
+                        keamanan JWT, dan efisiensi RBAC.
+                    </p>
+
+                    <a href="#endpoint" class="inline-block px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold
+               hover:bg-blue-700 transition shadow-xl shadow-blue-900/40
+               transform hover:-translate-y-1">
+                        Explore Endpoint <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- RIGHT ICON -->
+                <div class="relative flex justify-end">
+                    <div class="relative animate-float scale-60 sm:scale-75 md:scale-100">
+                        <div class="absolute inset-0 bg-blue-500/30 blur-3xl rounded-full hidden sm:block"></div>
+
+                        <svg viewBox="0 0 24 24" class="relative z-10 text-blue-400 drop-shadow-[0_20px_40px_rgba(59,130,246,0.4)] 
+            w-24 h-24 md:w-48 md:h-48">
+                            <path fill="currentColor"
+                                d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V8h4.5L13 3.5zM8 12h8v1.5H8V12zm0 4h8v1.5H8V16z" />
+                        </svg>
+                    </div>
+                </div>
+
+
+            </div>
+
+            </div>
+        </header>
+
+
+        <div class="max-w-6xl mx-auto p-6 sm:p-10 md:p-16">
+            <!-- TECH STACK -->
+            <section id="features" class="mb-32">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-2">Technical
+                            Architecture</h2>
+                        <p class="text-slate-500 italic">Fondasi kokoh untuk skalabilitas tinggi.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 feature-card">
+                        <div
+                            class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl mb-6 shadow-inner">
+                            <i class="fas fa-shield-halved"></i>
+                        </div>
+                        <h4 class="font-bold text-lg mb-3">Custom Guards</h4>
+                        <p class="text-sm text-slate-500 italic leading-relaxed">Isolasi autentikasi antara Karyawan dan
+                            Klien.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 feature-card">
+                        <div
+                            class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl mb-6 shadow-inner">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                        <h4 class="font-bold text-lg mb-3">RBAC Policy</h4>
+                        <p class="text-sm text-slate-500 italic leading-relaxed">Otorisasi presisi berbasis role dan
+                            departemen.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 feature-card">
+                        <div
+                            class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl mb-6 shadow-inner">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4 class="font-bold text-lg mb-3">Rate Limiting</h4>
+                        <p class="text-sm text-slate-500 italic leading-relaxed">Proteksi API dari abuse request
+                            berlebihan.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 feature-card">
+                        <div
+                            class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl mb-6 shadow-inner">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <h4 class="font-bold text-lg mb-3">Clean Code</h4>
+                        <p class="text-sm text-slate-500 italic leading-relaxed">Penerapan Repository & Service Pattern.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECURITY DETAIL -->
+            <section id="security" class="mb-32">
+                <div class="bg-slate-900 rounded-[3rem] p-8 md:p-16 text-white overflow-hidden relative">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                        <div>
+                            <h3 class="text-3xl font-bold mb-6 italic">Secure Implementation</h3>
+                            <p class="text-slate-400 mb-8 leading-relaxed italic">
+                                Setiap request divalidasi melalui <strong>Policy</strong> yang memeriksa status dokumen
+                                sebelum diproses.
+                            </p>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-4 group">
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition">
+                                        <i class="fas fa-check text-[10px]"></i>
+                                    </div>
+                                    <span class="text-sm font-medium italic">Multi-Guard Auth</span>
+                                </div>
+                            </div>
+                        </div>
+                        <pre class="relative border-slate-700 bg-slate-950/50 backdrop-blur-sm text-[11px] md:text-xs">
+public function approve(User $u, Doc $d) {
+    return $u->role === 'manager' 
+           && $d->status === 'pending';
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ENDPOINT -->
+            <section id="endpoint" class="mb-32">
+                <h2 class="text-3xl font-black mb-10 flex items-center gap-4">
+                    <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                    REST Reference
+                </h2>
+                <div class="bg-white border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm p-6 md:p-10">
+                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                        <span
+                            class="bg-emerald-500 text-white text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest">GET</span>
+                        <code class="text-sm md:text-base font-bold text-slate-700">/api/v1/documents</code>
+                    </div>
+                    <p class="text-sm text-slate-500 italic mb-6">Mengambil daftar dokumen yang memerlukan tindakan
+                        approval.</p>
+                    <pre class="text-[11px]">{
+  "success": true,
+  "data": [{ "id": 1, "title": "Invoice #01" }]
+}</pre>
+                </div>
+            </section>
+
+            <!-- ADVANCED FEATURES: QR CODE APPROVAL -->
+            <section id="adv-features" class="mb-20">
+                <h2 class="text-3xl font-black mb-10 flex items-center gap-4">
+                    <span class="w-2 h-8 bg-amber-500 rounded-full"></span>
+                    Advanced Feature Logic
+                </h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Feature Description -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <div
+                            class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 p-6 text-slate-100 group-hover:text-blue-50 transition">
+                                <i class="fas fa-qrcode text-6xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-4 relative z-10">Digital Signature QR Code
+                            </h3>
+                            <p class="text-sm text-slate-500 italic leading-relaxed mb-6 relative z-10">
+                                Integrasi keamanan kriptografi modern. Sistem men-generate QR Code dinamis yang
+                                mengandung metadata terenkripsi untuk memvalidasi otentisitas tanda tangan Manager.
+                            </p>
+                            <ul class="space-y-3 text-xs font-bold text-slate-600 uppercase tracking-tight">
+                                <li class="flex items-center gap-3"><i class="fas fa-shield-check text-blue-500"></i>
+                                    RSA Encrypted Payload</li>
+                                <li class="flex items-center gap-3"><i class="fas fa-fingerprint text-blue-500"></i>
+                                    Manager Bio-Identity</li>
+                                <li class="flex items-center gap-3"><i class="fas fa-history text-blue-500"></i>
+                                    Traceable Audit Trail</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-blue-600 p-8 rounded-[2.5rem] text-white shadow-xl shadow-blue-900/20">
+                            <h4 class="font-bold mb-3 italic">Technical Insight:</h4>
+                            <p class="text-xs text-blue-100 leading-relaxed italic">
+                                Implementasi menggunakan <code
+                                    class="bg-blue-800 px-1 rounded text-[10px]">simplesoftwareio/simple-qrcode</code>.
+                                Data di dalam QR Code dapat dipindai untuk memverifikasi data langsung dari database API
+                                guna mencegah pemalsuan dokumen PDF manual.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Visual & Code Logic -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <!-- Visual QR Placeholder -->
+                        <div
+                            class="bg-slate-900 p-8 rounded-[2.5rem] flex items-center justify-center relative overflow-hidden h-56">
+                            <div
+                                class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-30">
+                            </div>
+                            <div
+                                class="bg-white p-4 rounded-3xl shadow-2xl relative z-10 group cursor-pointer overflow-hidden">
+                                <!-- QR Scanner Effect -->
+                                <div class="qr-scanner-line"></div>
+
+                                <div
+                                    class="w-32 h-32 text-slate-900 flex items-center justify-center border-4 border-slate-50 rounded-xl">
+                                    <i class="fas fa-qrcode text-7xl"></i>
+                                </div>
+                                <div class="mt-3 text-center">
+                                    <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">Verify
+                                        Signature</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Code Block -->
+                        <div class="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-sm overflow-hidden">
+                            <h5 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">QR
+                                Generation Logic</h5>
+                            <pre class="bg-slate-50 border-slate-200 text-slate-700 text-[11px] font-mono">
+// Service: QRSignatureProvider
+public function generate(Document $doc, User $manager) {
+    $secureData = base64_encode(json_encode([
+        'sign_id' => hash('sha256', $doc->id . $manager->id),
+        'verify_url' => url("/verify/{$doc->uuid}")
+    ]));
+
+    return QrCode::size(200)->format('svg')->generate($secureData);
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="relative bg-slate-900 text-white overflow-hidden">
+            <!-- Glow Effect similar to Header -->
+            <div class="absolute top-0 left-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] -ml-32 -mt-32"></div>
+
+            <div class="max-w-6xl mx-auto px-6 py-12 relative z-10">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                    <div class="flex flex-col items-center md:items-start">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-file-contract text-blue-400 text-xl"></i>
+                            <span class="font-bold tracking-tighter text-xl text-white">DocFlow</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">Scalable Document
+                            Infrastructure</p>
+                    </div>
+
+                    <div class="flex flex-col items-center md:items-end gap-4">
+                        <div class="flex gap-6 text-slate-400">
+                            <a href="#" class="hover:text-blue-400 transition text-sm"><i class="fab fa-github"></i>
+                                Repository</a>
+                            <a href="#" class="hover:text-blue-400 transition text-sm"><i class="fab fa-linkedin"></i>
+                                Contact</a>
+                        </div>
+                        <div class="h-px w-24 bg-slate-800"></div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">&copy; 2026 Crafted
+                            with Passion.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const closeSidebarMobile = document.getElementById('closeSidebarMobile');
+        const body = document.body;
+
+        // Fungsi untuk membuka sidebar (Mobile & Desktop)
+        const openSidebar = () => {
+            if (window.innerWidth < 768) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                body.classList.add('overflow-hidden');
+            } else {
+                body.classList.remove('sidebar-closed');
+            }
+        };
+
+        // Fungsi untuk menutup sidebar (Mobile & Desktop)
+        const closeSidebar = () => {
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                body.classList.remove('overflow-hidden');
+            } else {
+                body.classList.add('sidebar-closed');
+            }
+        };
+
+        // Fungsi Toggle
+        const toggleSidebar = () => {
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            } else {
+                if (body.classList.contains('sidebar-closed')) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            }
+        };
+
+        menuBtn.onclick = toggleSidebar;
+        overlay.onclick = closeSidebar;
+        closeSidebarMobile.onclick = closeSidebar;
+
+        // Auto-manage status sidebar saat resize window
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                // Mode Desktop: Pastikan translate dinonaktifkan
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.add('hidden');
+                body.classList.remove('overflow-hidden');
+            } else {
+                // Mode Mobile: Sembunyikan secara default jika belum ada interaksi
+                if (!overlay.classList.contains('hidden')) {
+                    // Jika sedang terbuka, pertahankan
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+        });
+
+        // Highlight link aktif saat scroll
+        const sections = document.querySelectorAll("section[id], header[id]");
+        const links = document.querySelectorAll(".sidebar-link");
+
+        window.addEventListener("scroll", () => {
+            let current = "";
+            sections.forEach(sec => {
+                const sectionTop = sec.offsetTop;
+                if (pageYOffset >= sectionTop - 150) {
+                    current = sec.getAttribute("id");
+                }
+            });
+
+            links.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === "#" + current) {
+                    link.classList.add("active");
+                }
+            });
+        });
+
+        // Tutup sidebar otomatis saat link diklik (khusus mobile)
+        links.forEach(l => {
+            l.onclick = () => {
+                if (window.innerWidth < 768) closeSidebar();
+            };
+        });
+    </script>
+
+</body>
+
+</html>
