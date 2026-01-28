@@ -12,12 +12,6 @@ class DocumentRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
-        // Bisa pakai policy create otomatis
-        return $this->user()->can('create', Document::class);
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *

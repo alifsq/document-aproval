@@ -18,31 +18,17 @@ class EnsureTenantMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = auth()->user(); // Diambil dari Custom Guard kamu
+        $user = $request->user();
 
-        // Jika user tidak ada (biasanya sudah dicek di auth:api), tolak
-        if (!$user) {
-            throw new InvalidCredentialException();
-
+        // Cek tenant
+        if (!$user || !$user->tenant) {
+            return response()->json(['message' => 'Tenant not found'], 403);
         }
 
-        // Poin 2.2: Tambahan proteksi jika tenant non-aktif (Double Check)
-        if (!$user->tenant || !$user->tenant->is_active) {
-            throw new InactiveTenantException();
+        // Cek tenant active
+        if (!$user->tenant->is_active) {
+            return response()->json(['message' => 'Tenant inactive'], 403);
         }
-
-        // Poin 2.1: Tenant Mismatch (Logic Inti)
-        // Kita asumsikan routenya punya parameter, misal: /api/projects/{project}
-        $resource = $request->route()->parameter('id');
-
-        if ($resource && isset($resource->tenant_id)) {
-            if ($resource->tenant_id !== $user->tenant_id) {
-                // Jangan pakai 404 jika ingin sembunyikan keberadaan data (Security by Obscurity)
-                // Tapi standar Poin 2.1 kamu minta 403 Forbidden
-                abort(403, 'Unauthorized access to this resource.');
-            }
-        }
-
 
         return $next($request);
     }

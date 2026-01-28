@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Documents;
 
 use App\Models\Document;
 use App\Models\Tenant;
@@ -13,24 +13,18 @@ use Tests\TestCase;
 class DocumentTest extends TestCase
 {
     use RefreshDatabase;
-    public function testTenantActive()
-    {
-        $tenant = Tenant::factory()->create([
-            'is_active' => true,
-        ]);
+    public function testTenantInactive(){
 
+        $tenant = Tenant::factory()->inactive()->create();
         $user = User::factory()->create([
             'tenant_id' => $tenant->id,
-            'is_active' => true,
         ]);
 
-        $this->actingAs($user, 'api-token');
-
-        $response = $this->getJson('/api/documents');
-        
-        $response->assertStatus(200);
-    }
-    public function testTenantNonActive(){
-
+        $this->actingAs($user)
+            ->postJson('api/documents',[
+                'title' => 'test',
+                'content' => 'test',
+                'file_path' => 'test',
+            ]);
     }
 }

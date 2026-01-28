@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\DocumentStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
+    use HasFactory;
     protected $table = 'documents';
     protected $primaryKey = 'id';
     protected $keyType = 'int';
@@ -28,6 +31,7 @@ class Document extends Model
             'submitted_at' => 'timestamp',
             'approved_at' => 'timestamp',
             'rejected_at' => 'timestamp',
+            'status' => DocumentStatus::class,
         ];
     }
 

@@ -21,6 +21,7 @@ class DocumentResource extends JsonResource
             'file_path' => $this->file_path,
             'status' => $this->status,
             'created_at' => $this->created_at,
+            
         ];
     }
 }

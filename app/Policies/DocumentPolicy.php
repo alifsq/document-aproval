@@ -21,7 +21,7 @@ class DocumentPolicy
      */
     public function view(User $user, Document $document): bool
     {
-        return $user->tenant_id == $document->tenant_id;
+        return $user->role->canView($document, $user);
     }
 
     /**
@@ -29,7 +29,7 @@ class DocumentPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->role->canCreate();
     }
 
     /**
@@ -37,7 +37,19 @@ class DocumentPolicy
      */
     public function update(User $user, Document $document): bool
     {
-        return $user->tenant_id === $document->tenant_id;
+        return $user->role->canEdit($document, $user);
+    }
+
+    // Submit
+    public function submit(User $user, Document $document): bool
+    {
+        return $user->role->canSubmit($document, $user);
+    }
+
+    // Approve
+    public function approve(User $user, Document $document): bool
+    {
+        return $user->role->canApprove($document, $user);
     }
 
     /**

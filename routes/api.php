@@ -8,6 +8,6 @@ Route::post('auth/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth:api', 'tenant.isactive'])->group(function () {
     Route::get('/documents',[DocumentController::class, 'index']);
-
+    Route::post('/documents',[DocumentController::class, 'store']);
 });
 Route::post('auth/logout', [AuthController::class, 'logout']);
