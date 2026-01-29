@@ -39,18 +39,23 @@ class AuthService
             ]);
 
 
+        // Di dalam AuthService.php
         $plainToken = Str::random(64);
+        $hashToStore = hash('sha256', $plainToken);
+
+        // DEBUG: Intip apa yang akan disimpan
+        // dd(['mentah' => $plainToken, 'hash_siap_simpan' => $hashToStore]);
 
         ApiToken::create([
             'user_id' => $user->id,
             'tenant_id' => $user->tenant_id,
             'name' => 'API Token',
-            'token_hash' => hash('sha256', $plainToken),
+            'token_hash' => $hashToStore, // Simpan variabel yang sudah di-hash
             'expires_at' => now()->addHours(8),
         ]);
 
         return [
-            'token' => $plainToken,
+            'token' => $plainToken, // Kirim yang MENTAH ke Postman
             'expires_at' => now()->addHours(8),
         ];
     }

@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Gate;
 class DocumentService
 {
 
+    public function view(User $user){
+        Gate::authorize('view',Document::class);
+        return Document::query()->where('tenant_id','=',$user->id)->get();
+    }
     public function create(User $user, $data)
     {
         Gate::authorize('create',Document::class);

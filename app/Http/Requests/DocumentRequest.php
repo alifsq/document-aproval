@@ -17,12 +17,16 @@ class DocumentRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
     public function rules(): array
     {
         return [
             'title' => ['required', 'max:100'],
             'content' => ['nullable'],
-            'file_path' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
         ];
     }
 

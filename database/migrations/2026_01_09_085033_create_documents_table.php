@@ -14,7 +14,6 @@ return new class extends Migration {
             $table->id();
             $table->string('title', 100);
             $table->text('content')->nullable();
-            $table->string('file_path')->nullable();
             $table->enum('status', ['draft', 'submitted', 'approved', 'rejected'])->default('draft');
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('approved_at')->nullable();

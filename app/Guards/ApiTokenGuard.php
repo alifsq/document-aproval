@@ -18,7 +18,6 @@ class ApiTokenGuard implements Guard
         $this->provider = $provider;
         $this->request = $request;
     }
-
     public function user()
     {
         if ($this->user) {
@@ -42,6 +41,7 @@ class ApiTokenGuard implements Guard
             return null;
         }
 
+        // Baris sakti yang mengisi auth()->user()
         return $this->user = $this->provider->retrieveById($tokenModel->user_id);
     }
 

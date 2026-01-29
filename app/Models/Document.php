@@ -16,6 +16,7 @@ class Document extends Model
 
     protected $fillable = [
         'tenant_id',
+        'created_by',
         'created_at',
         'title',
         'content',

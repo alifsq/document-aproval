@@ -18,10 +18,9 @@ class DocumentResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'content' => $this->whenNotNull($this->content),
-            'file_path' => $this->file_path,
             'status' => $this->status,
             'created_at' => $this->created_at,
-            
+
         ];
     }
 }
